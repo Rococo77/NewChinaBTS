@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: PlatRepository::class)]
 class Plat
@@ -14,24 +15,32 @@ class Plat
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['plat.index'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+
+    #[Groups(['plat.index'])]
     private ?string $Nom = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['plat.index'])]
     private ?string $Description = null;
 
     #[ORM\Column]
+    #[Groups(['plat.index'])]
     private ?float $PrixUnit = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['plat.index'])]
     private ?int $StockQtt = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Groups(['plat.index'])]
     private ?\DateTimeInterface $PeremptionDate = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['plat.index'])]
     private ?string $Allergen = null;
 
     
@@ -44,12 +53,14 @@ class Plat
 
     #[ORM\ManyToOne(inversedBy: 'Plat')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['plat.index'])]
     private ?Region $region = null;
 
     /**
      * @var Collection<int, Ingredient>
      */
     #[ORM\ManyToMany(targetEntity: Ingredient::class, mappedBy: 'Plat')]
+    #[Groups(['plat.index'])]
     private Collection $ingredients;
 
     /**

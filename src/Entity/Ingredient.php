@@ -6,6 +6,7 @@ use App\Repository\IngredientRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: IngredientRepository::class)]
 class Ingredient
@@ -13,9 +14,12 @@ class Ingredient
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['plat.index','ingredient.index'  ])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['plat.index','ingredient.index'  ])]
+
     private ?string $Nom = null;
 
     /**
