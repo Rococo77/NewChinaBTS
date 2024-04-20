@@ -34,8 +34,7 @@ class Plat
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $Allergen = null;
 
-    #[ORM\ManyToOne(inversedBy: 'Plats')]
-    private ?Panier $panier = null;
+    
 
     /**
      * @var Collection<int, Commande>
@@ -53,10 +52,17 @@ class Plat
     #[ORM\ManyToMany(targetEntity: Ingredient::class, mappedBy: 'Plat')]
     private Collection $ingredients;
 
+    /**
+     * @var Collection<int, Panier>
+     */
+    #[ORM\OneToMany(targetEntity: Panier::class, mappedBy: 'Plat')]
+    private Collection $paniers;
+
     public function __construct()
     {
         $this->commandes = new ArrayCollection();
         $this->ingredients = new ArrayCollection();
+        $this->paniers = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -136,17 +142,7 @@ class Plat
         return $this;
     }
 
-    public function getPanier(): ?Panier
-    {
-        return $this->panier;
-    }
-
-    public function setPanier(?Panier $panier): static
-    {
-        $this->panier = $panier;
-
-        return $this;
-    }
+   
 
     /**
      * @return Collection<int, Commande>
@@ -209,6 +205,36 @@ class Plat
     {
         if ($this->ingredients->removeElement($ingredient)) {
             $ingredient->removePlat($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Panier>
+     */
+    public function getPaniers(): Collection
+    {
+        return $this->paniers;
+    }
+
+    public function addPanier(Panier $panier): static
+    {
+        if (!$this->paniers->contains($panier)) {
+            $this->paniers->add($panier);
+            $panier->setPlat($this);
+        }
+
+        return $this;
+    }
+
+    public function removePanier(Panier $panier): static
+    {
+        if ($this->paniers->removeElement($panier)) {
+            // set the owning side to null (unless already changed)
+            if ($panier->getPlat() === $this) {
+                $panier->setPlat(null);
+            }
         }
 
         return $this;

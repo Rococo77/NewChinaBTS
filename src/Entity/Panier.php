@@ -21,16 +21,12 @@ class Panier
     #[ORM\ManyToOne(inversedBy: 'paniers')]
     private ?User $Users = null;
 
-    /**
-     * @var Collection<int, Plat>
-     */
-    #[ORM\OneToMany(targetEntity: Plat::class, mappedBy: 'panier')]
-    private Collection $Plats;
+    #[ORM\ManyToOne(inversedBy: 'paniers')]
+    private ?Plat $Plat = null;
 
-    public function __construct()
-    {
-        $this->Plats = new ArrayCollection();
-    }
+   
+
+    
 
     public function getId(): ?int
     {
@@ -61,33 +57,17 @@ class Panier
         return $this;
     }
 
-    /**
-     * @return Collection<int, Plat>
-     */
-    public function getPlats(): Collection
+    public function getPlat(): ?Plat
     {
-        return $this->Plats;
+        return $this->Plat;
     }
 
-    public function addPlat(Plat $plat): static
+    public function setPlat(?Plat $Plat): static
     {
-        if (!$this->Plats->contains($plat)) {
-            $this->Plats->add($plat);
-            $plat->setPanier($this);
-        }
+        $this->Plat = $Plat;
 
         return $this;
     }
 
-    public function removePlat(Plat $plat): static
-    {
-        if ($this->Plats->removeElement($plat)) {
-            // set the owning side to null (unless already changed)
-            if ($plat->getPanier() === $this) {
-                $plat->setPanier(null);
-            }
-        }
-
-        return $this;
-    }
+    
 }
