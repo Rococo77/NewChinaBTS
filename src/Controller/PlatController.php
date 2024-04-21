@@ -32,6 +32,18 @@ class PlatController extends AbstractController
         return $this->json($plats, 200, [], ['groups' => ['plat.index']]);
     }
 
+    #[Route("/{id}", name: "get_plat", methods: ["GET"])]
+    public function getPlat(int $id, PlatRepository $repository): Response
+    {
+        $plat = $repository->find($id);
+
+        if (!$plat) {
+            return $this->json(['message' => 'Plat not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->json($plat, 200, [], ['groups' => ['plat.index']]);
+    }
+
     #[Route("/", methods: ['POST'])]
     public function create(Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer, RegionRepository $regionRepository, IngredientRepository $ingredientRepository): Response
     {
@@ -42,22 +54,28 @@ class PlatController extends AbstractController
             throw $this->createNotFoundException("La catégorie n'existe pas. ");
         }
 
-        $ingredient = $ingredientRepository->find($platData['ingredient']['id']);
-        if(!$ingredient){
-            throw $this->createNotFoundException("L'ingrédient n'existe pas. ");
+        $ingredients = [];
+        foreach ($platData['ingredient'] as $ingredientData) {
+            $ingredient = $ingredientRepository->find($ingredientData['id']);
+            if(!$ingredient){
+                throw $this->createNotFoundException("L'ingrédient n'existe pas. ");
+            }
+            $ingredients[] = $ingredient;
         }
-        $platData['ingredient'] = $ingredient;
 
         $plat = $serializer->deserialize(json_encode($platData), Plat::class, 'json');
 
         $plat->setRegion($region);
-        $plat->addIngredient($ingredient);
+        foreach ($ingredients as $ingredient) {
+            $plat->addIngredient($ingredient);
+        }
 
         $entityManager->persist($plat);
         $entityManager->flush();
 
         return $this->json($plat, Response::HTTP_CREATED, [], ['groups' => ['plat.index']]);
     }
+
 
 
     #[Route("/{id}", methods: ['PUT'], requirements: ['id' => '\d+'])]
@@ -88,14 +106,14 @@ class PlatController extends AbstractController
             }
         }
 
-        if (isset($data['ingredient'])) {
-            // Supprimez d'abord tous les ingrédients existants pour éviter les doublons
+        if (isset($data['ingredients'])) {
+            // Supprimez tous les anciens ingrédients du plat
             foreach ($plat->getIngredients() as $existingIngredient) {
                 $plat->removeIngredient($existingIngredient);
             }
 
-            // Ajoutez ensuite les nouveaux ingrédients
-            foreach ($data['ingredient'] as $ingredientData) {
+            // Ajoutez les nouveaux ingrédients fournis dans les données de la requête
+            foreach ($data['ingredients'] as $ingredientData) {
                 $ingredient = $ingredientRepository->find($ingredientData['id']);
                 if (!$ingredient) {
                     // Si l'ingrédient n'est pas trouvé, retournez un message d'erreur

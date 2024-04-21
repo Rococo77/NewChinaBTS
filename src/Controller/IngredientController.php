@@ -34,6 +34,7 @@ class IngredientController extends AbstractController
         return $this->json($ingredients, 200, [], ['groups' => ['ingredient.index']]);
     }
 
+
     #[Route("/", methods: ['POST'])]
     public function create(Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer): Response
     {
@@ -48,7 +49,6 @@ class IngredientController extends AbstractController
 
         return $this->json($ingredient, Response::HTTP_CREATED, [], ['groups' => ['ingredient.index']]);
     }
-
 
     #[Route("/{id}", methods: ['PUT'], requirements: ['id' => '\d+'])]
     public function update(Ingredient $ingredient, Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer, RegionRepository $repository): Response
