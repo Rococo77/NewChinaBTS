@@ -29,6 +29,21 @@ class RegionController extends AbstractController
         return $this->json($regions, 200, [], ['groups' => ['region.index']]);
     }
 
+    #[Route("/{id}", methods: ['GET'])]
+    public function getRegionById(int $id, RegionRepository $repository): Response
+    {
+        $encoders = [new JsonEncoder()];
+        $normalizers = [new ObjectNormalizer()];
+        $serializer = new Serializer($normalizers, $encoders);
+
+        $region = $repository->find($id);
+        if (!$region) {
+            return $this->json(['message' => 'Region not found'], 404);
+        }
+
+        return $this->json($region, 200, [], ['groups' => ['region.show']]);
+    }
+
     #[Route("/", methods: ['POST'])]
     public function create(Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer, RegionRepository $repository): Response
     {
