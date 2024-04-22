@@ -36,19 +36,16 @@ class IngredientController extends AbstractController
 
 
 
-    #[Route("/{id}", methods: ['GET'])]
-    public function getIngredient(IngredientRepository $repository, int $id): Response
+    #[Route("/{id}", name: "get_ingredient", methods: ["GET"])]
+    public function getPlat(int $id, IngredientRepository $repository): Response
     {
-        $encoders = [new JsonEncoder()];
-        $normalizers = [new ObjectNormalizer()];
-        $serializer = new Serializer($normalizers, $encoders);
-
         $ingredient = $repository->find($id);
+
         if (!$ingredient) {
-            return $this->json(['message' => 'Ingrédient non trouvé'], 404);
+            return $this->json(['message' => 'Ingredient not found'], Response::HTTP_NOT_FOUND);
         }
 
-        return $this->json($ingredient, 200, [], ['groups' => ['ingredient.show']]);
+        return $this->json($ingredient, 200, [], ['groups' => ['ingredient.index']]);
     }
     #[Route("/", methods: ['POST'])]
     public function create(Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer): Response
