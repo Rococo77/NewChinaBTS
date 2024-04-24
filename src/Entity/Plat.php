@@ -15,35 +15,35 @@ class Plat
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['plat.index'])]
+    #[Groups(['recipe.index','recipe.show'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
 
-    #[Groups(['plat.index'])]
+    #[Groups(['recipe.index','recipe.show'])]
     private ?string $Nom = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['plat.index'])]
+    #[Groups(['recipe.show'])]
     private ?string $Description = null;
 
     #[ORM\Column]
-    #[Groups(['plat.index'])]
+    #[Groups(['recipe.show','recipe.index'])]
     private ?float $PrixUnit = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['plat.index'])]
+    #[Groups(['recipe.index','recipe.show'])]
     private ?int $StockQtt = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    #[Groups(['plat.index'])]
+    #[Groups(['recipe.show'])]
     private ?\DateTimeInterface $PeremptionDate = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['plat.index'])]
+    #[Groups(['recipe.show'])]
     private ?string $Allergen = null;
 
-    
+
 
     /**
      * @var Collection<int, Commande>
@@ -53,14 +53,14 @@ class Plat
 
     #[ORM\ManyToOne(inversedBy: 'Plat')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['plat.index'])]
+    #[Groups(['recipe.show'])]
     private ?Region $region = null;
 
     /**
      * @var Collection<int, Ingredient>
      */
     #[ORM\ManyToMany(targetEntity: Ingredient::class, mappedBy: 'Plat')]
-    #[Groups(['plat.index'])]
+    #[Groups(['recipe.show','compo.index'])]
     private Collection $ingredients;
 
     /**
@@ -197,6 +197,8 @@ class Plat
     /**
      * @return Collection<int, Ingredient>
      */
+
+    #[Groups(['compo.index'])]
     public function getIngredients(): Collection
     {
         return $this->ingredients;

@@ -14,12 +14,11 @@ class Region
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['region.index' ,'plat.index'])]
+    #[Groups(['region.index','region.show','recipe.show'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['region.index' ,'plat.index'])]
-
+    #[Groups(['region.index','region.show','recipe.show'])]
     private ?string $Nom = null;
 
     /**

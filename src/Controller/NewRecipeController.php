@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Ingredient;
 use App\Entity\Plat;
 use App\Entity\Region;
 use App\Repository\IngredientRepository;
@@ -17,65 +18,76 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 
-#[Route("/admin/plat", name: 'admin.plat.')]
-class PlatController extends AbstractController
+#[Route("/admin/recipes")]
+class NewRecipeController extends AbstractController
 {
 
-    #[Route("/", methods: ['GET'])]
-    public function index(PlatRepository $repository): Response
+    //Afficher Plat
+    #[Route("/", name: "recipe_list", methods: ['GET'])]
+    public function listPlats(PlatRepository $repository, SerializerInterface $serializer): Response
     {
-        $encoders = [new JsonEncoder()];
-        $normalizers = [new ObjectNormalizer()];
-        $serializer = new Serializer($normalizers, $encoders);
-
         $plats = $repository->findAll();
-        return $this->json($plats, 200, [], ['groups' => ['plat.index']]);
-    }
 
-    #[Route("/{id}", name: "get_plat", methods: ["GET"])]
-    public function getPlat(int $id, PlatRepository $repository): Response
+        $jsonContent = $serializer->serialize($plats, 'json', ['groups' => 'recipe.index']);
+        $response = new Response($jsonContent);
+
+        $response->headers->set('Content-Type', 'application/json');
+
+        return $response;
+    }
+    //Afficher Plat en détail
+
+    #[Route("/{id}", name: "recipe_details",  methods: ['GET'])]
+    public function platDetails(int $id, PlatRepository $repository, SerializerInterface $serializer): Response
     {
-        $plat = $repository->find($id);
 
-        if (!$plat) {
-            return $this->json(['message' => 'Plat not found'], Response::HTTP_NOT_FOUND);
-        }
+        $plats = $repository->find($id);
 
-        return $this->json($plat, 200, [], ['groups' => ['plat.index']]);
+        $jsonContent = $serializer->serialize($plats, 'json', ['groups' => 'recipe.show']);
+        $response = new Response($jsonContent);
+
+        $response->headers->set('Content-Type', 'application/json');
+
+        return $response;
     }
+    //Creer Plat
 
-    #[Route("/", methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer, RegionRepository $regionRepository, IngredientRepository $ingredientRepository): Response
+    #[Route("/", name: "recipe_create", methods: ['POST'])]
+    public function createRecipe(Request $request, PlatRepository $platRepository, RegionRepository $regionRepository, IngredientRepository $ingredientRepository, EntityManagerInterface $entityManager, SerializerInterface $serializer): Response
     {
         $platData = json_decode($request->getContent(), true);
 
+        $plat = new Plat();
+
+        $plat->setNom($platData['nom']);
+        $plat->setDescription($platData['description']);
+        $plat->setPrixUnit($platData['prix_unit']);
+        $plat->setStockQtt($platData['stock_qtt']);
+        $plat->setPeremptionDate((new \DateTime())->modify('+2 days'));
+        $plat->setAllergen($platData['allergen']);
+
         $region = $regionRepository->find($platData['region']['id']);
-        if(!$region){
-            throw $this->createNotFoundException("La catégorie n'existe pas. ");
+        if (!$region) {
+            return $this->json(['message' => 'Region not found'], Response::HTTP_BAD_REQUEST);
         }
-
-        $ingredients = [];
-        foreach ($platData['ingredient'] as $ingredientData) {
-            $ingredient = $ingredientRepository->find($ingredientData['id']);
-            if(!$ingredient){
-                throw $this->createNotFoundException("L'ingrédient n'existe pas. ");
-            }
-            $ingredients[] = $ingredient;
-        }
-
-        $plat = $serializer->deserialize(json_encode($platData), Plat::class, 'json');
-
         $plat->setRegion($region);
-        foreach ($ingredients as $ingredient) {
+
+        foreach ($platData['ingredients'] as $ingredientData) {
+            $ingredient = $ingredientRepository->find($ingredientData['id']);
+            if (!$ingredient) {
+                return $this->json(['message' => 'Ingredient not found'], Response::HTTP_BAD_REQUEST);
+            }
             $plat->addIngredient($ingredient);
         }
 
         $entityManager->persist($plat);
         $entityManager->flush();
 
-        return $this->json($plat, Response::HTTP_CREATED, [], ['groups' => ['plat.index']]);
+        $jsonContent = $serializer->serialize($plat, 'json', ['groups' => 'recipe.show']);
+        return new Response($jsonContent, Response::HTTP_CREATED, ['Content-Type' => 'application/json']);
     }
 
+    //Modifier Plat (pas ingrédient)
 
 
     #[Route("/{id}", methods: ['PUT'], requirements: ['id' => '\d+'])]
@@ -106,29 +118,12 @@ class PlatController extends AbstractController
             }
         }
 
-        if (isset($data['ingredients'])) {
-            // Supprimez tous les anciens ingrédients du plat
-            foreach ($plat->getIngredients() as $existingIngredient) {
-                $plat->removeIngredient($existingIngredient);
-            }
-
-            // Ajoutez les nouveaux ingrédients fournis dans les données de la requête
-            foreach ($data['ingredients'] as $ingredientData) {
-                $ingredient = $ingredientRepository->find($ingredientData['id']);
-                if (!$ingredient) {
-                    // Si l'ingrédient n'est pas trouvé, retournez un message d'erreur
-                    return $this->json(['error' => "L'ingrédient avec l'ID " . $ingredientData['id'] . " n'existe pas."], Response::HTTP_NOT_FOUND);
-                }
-                $plat->addIngredient($ingredient);
-            }
-        }
-
         $entityManager->flush();
 
-        return $this->json($plat, Response::HTTP_OK, [], ['groups' => ['plat.index']]);
+        return $this->json($plat, Response::HTTP_OK, [], ['groups' => ['recipe.show']]);
     }
 
-
+    //Supprimer
 
     #[Route("/{id}", methods: ['DELETE'], requirements: ['id' => '\d+'])]
     public function delete(Plat $plat, EntityManagerInterface $entityManager, PlatRepository $repository): Response
@@ -137,7 +132,10 @@ class PlatController extends AbstractController
         $entityManager->flush();
 
         $recipes = $repository->findAll();
-        return $this->json($recipes, 200, [], ['groups' => ['plat.index']]);
+        return $this->json($recipes, 200, [], ['groups' => ['recipe.index']]);
     }
+
+
+
 
 }
