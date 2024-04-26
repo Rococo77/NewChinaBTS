@@ -6,15 +6,45 @@ use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\Table(name: '`user`')]
-class User
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_USERNAME', fields: ['username'])]
+#[UniqueEntity(fields: ['username'], message: 'There is already an account with this username')]
+#[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
+
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Column(length: 180)]
+    private ?string $username = null;
+
+    /**
+     * @var list<string> The user roles
+     */
+    #[ORM\Column]
+    private array $roles = [];
+
+    /**
+     * @var string The hashed password
+     */
+    #[ORM\Column]
+    private ?string $password = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $email = null;
+
+    #[ORM\ManyToOne(inversedBy: 'users')]
+    private ?Role $role = null;
+
+    #[ORM\Column(type: 'boolean')]
+    private $isVerified = false;
 
     #[ORM\Column(length: 255)]
     private ?string $Nom = null;
@@ -30,16 +60,6 @@ class User
 
     #[ORM\Column(length: 255)]
     private ?string $ZIP = null;
-
-    #[ORM\Column(length: 255)]
-    private ?string $Mail = null;
-
-    #[ORM\Column(length: 255)]
-    private ?string $MdP = null;
-
-    #[ORM\ManyToOne(inversedBy: 'Users')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Role $role = null;
 
     /**
      * @var Collection<int, Panier>
@@ -63,6 +83,18 @@ class User
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getUsername(): ?string
+    {
+        return $this->username;
+    }
+
+    public function setUsername(string $username): static
+    {
+        $this->username = $username;
+
+        return $this;
     }
 
     public function getNom(): ?string
@@ -125,26 +157,29 @@ class User
         return $this;
     }
 
-    public function getMail(): ?string
+    public function getEmail(): ?string
     {
-        return $this->Mail;
+        return $this->email;
     }
 
-    public function setMail(string $Mail): static
+    public function setEmail(string $email): static
     {
-        $this->Mail = $Mail;
+        $this->email = $email;
 
         return $this;
     }
 
-    public function getMdP(): ?string
+    /**
+     * @see PasswordAuthenticatedUserInterface
+     */
+    public function getPassword(): string
     {
-        return $this->MdP;
+        return $this->password;
     }
 
-    public function setMdP(string $MdP): static
+    public function setPassword(string $password): static
     {
-        $this->MdP = $MdP;
+        $this->password = $password;
 
         return $this;
     }
@@ -160,6 +195,32 @@ class User
 
         return $this;
     }
+
+    public function getRoles(): array
+    {
+        $roles = $this->roles;
+
+
+
+        if ($this->getRole()->getId() === 1) {
+            $roles[] = 'ROLE_SUPER_ADMIN';
+            $roles[] = 'ROLE_ADMIN';
+
+        }
+        if ($this->getRole()->getId() === 2) {
+            $roles[] = 'ROLE_ADMIN';
+            $roles[] = 'ROLE_USER';
+
+        }
+
+        if ($this->getRole()->getId() === 3) {
+            $roles[] = 'ROLE_USER';
+        }
+
+
+        return array_unique($roles);
+    }
+
 
     /**
      * @return Collection<int, Panier>
@@ -217,5 +278,25 @@ class User
 
         return $this;
     }
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
 
+    public function setVerified(bool $isVerified): static
+    {
+        $this->isVerified = $isVerified;
+
+        return $this;
+    }
+
+    public function eraseCredentials(): void
+    {
+        // TODO: Implement eraseCredentials() method.
+    }
+
+    public function getUserIdentifier(): string
+    {
+        // TODO: Implement getUserIdentifier() method.
+    }
 }

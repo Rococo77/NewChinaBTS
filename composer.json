@@ -19,6 +19,7 @@
         "symfony/framework-bundle": "7.0.*",
         "symfony/property-access": "7.0.*",
         "symfony/runtime": "7.0.*",
+        "symfony/security-bundle": "7.0.*",
         "symfony/serializer": "7.0.*",
         "symfony/validator": "7.0.*",
         "symfony/var-exporter": "7.0.4",
