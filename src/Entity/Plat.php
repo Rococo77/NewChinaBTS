@@ -15,32 +15,32 @@ class Plat
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['recipe.index','recipe.show'])]
+    #[Groups(['recipe.index','recipe.show','panier:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
 
-    #[Groups(['recipe.index','recipe.show'])]
+    #[Groups(['recipe.index','recipe.show','panier:read'])]
     private ?string $Nom = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['recipe.show'])]
+    #[Groups(['recipe.show','panier:read'])]
     private ?string $Description = null;
 
     #[ORM\Column]
-    #[Groups(['recipe.show','recipe.index'])]
+    #[Groups(['recipe.show','recipe.index','panier:read'])]
     private ?float $PrixUnit = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['recipe.index','recipe.show'])]
+    #[Groups(['recipe.index','recipe.show','panier:read'])]
     private ?int $StockQtt = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    #[Groups(['recipe.show'])]
+    #[Groups(['recipe.show','panier:read'])]
     private ?\DateTimeInterface $PeremptionDate = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['recipe.show'])]
+    #[Groups(['recipe.show','panier:read'])]
     private ?string $Allergen = null;
 
 
@@ -244,7 +244,6 @@ class Plat
     public function removePanier(Panier $panier): static
     {
         if ($this->paniers->removeElement($panier)) {
-            // set the owning side to null (unless already changed)
             if ($panier->getPlat() === $this) {
                 $panier->setPlat(null);
             }

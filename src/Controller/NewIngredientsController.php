@@ -13,17 +13,17 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 
-#[Route("/admin/ingredients")]
+#[Route("/api/admin/ingredients")]
 class NewIngredientsController extends AbstractController
 {
-
-    //AFFICHER
     #[Route("/", name: "ingredient_list", methods: ['GET'])]
+    #[IsGranted("ROLE_USER")]
     public function listIngredients(IngredientRepository $repository, SerializerInterface $serializer): Response
     {
 
@@ -38,6 +38,7 @@ class NewIngredientsController extends AbstractController
     }
     //AFFICHER DETAIL
     #[Route("/{id}", name: "ingredient_details",  methods: ['GET'])]
+    #[IsGranted("ROLE_USER")]
     public function ingredientDetails(int $id, IngredientRepository $repository, SerializerInterface $serializer): Response
     {
 
@@ -53,18 +54,22 @@ class NewIngredientsController extends AbstractController
 
     //CREER
     #[Route("/", name: "ingredient_create", methods: ['POST'])]
+    #[IsGranted("ROLE_ADMIN")]
     public function createIngredient(Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer): Response
     {
-        $ingredient = $serializer->deserialize($request->getContent(), Region::class, 'json');
+        $ingredientData = json_decode($request->getContent(), true);
+
+        $ingredient = new Ingredient();
+        $ingredient->setNom($ingredientData['Nom']);
 
         $entityManager->persist($ingredient);
         $entityManager->flush();
-
         return $this->json($ingredient, Response::HTTP_CREATED, [], ['groups' => 'ingredient.index']);
     }
 
     //UPDATE
     #[Route("/{id}", methods: ['PUT'], requirements: ['id' => '\d+'])]
+    #[IsGranted("ROLE_ADMIN")]
     public function update(Ingredient $ingredient, Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer, RegionRepository $repository): Response
     {
         $data = json_decode($request->getContent(), true);
@@ -80,6 +85,7 @@ class NewIngredientsController extends AbstractController
 
     //DELETE
     #[Route("/{id}", name: "ingredient_delete", methods: ['DELETE'], requirements: ['id' => '\d+'])]
+    #[IsGranted("ROLE_ADMIN")]
     public function delete(Ingredient $ingredient, EntityManagerInterface $entityManager, IngredientRepository $repository): Response
     {
         $entityManager->remove($ingredient);

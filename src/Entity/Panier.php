@@ -1,11 +1,12 @@
 <?php
-
 namespace App\Entity;
 
 use App\Repository\PanierRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
+
 
 #[ORM\Entity(repositoryClass: PanierRepository::class)]
 class Panier
@@ -13,36 +14,25 @@ class Panier
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['panier:read'])]
     private ?int $id = null;
 
-    #[ORM\Column]
-    private ?int $Quantité = null;
-
     #[ORM\ManyToOne(inversedBy: 'paniers')]
+    #[Groups(['panier:read'])]
     private ?User $Users = null;
 
-    #[ORM\ManyToOne(inversedBy: 'paniers')]
-    private ?Plat $Plat = null;
+    #[ORM\OneToMany(mappedBy: 'panier', targetEntity: PanierItem::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[Groups(['panier:read'])]
+    private Collection $items;
 
-   
-
-    
+    public function __construct()
+    {
+        $this->items = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getQuantité(): ?int
-    {
-        return $this->Quantité;
-    }
-
-    public function setQuantité(int $Quantité): static
-    {
-        $this->Quantité = $Quantité;
-
-        return $this;
     }
 
     public function getUsers(): ?User
@@ -53,21 +43,37 @@ class Panier
     public function setUsers(?User $Users): static
     {
         $this->Users = $Users;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PanierItem>
+     */
+    public function getItems(): Collection
+    {
+        return $this->items;
+    }
+
+    public function addItem(PanierItem $item): static
+    {
+        if (!$this->items->contains($item)) {
+            $this->items[] = $item;
+            $item->setPanier($this);
+        }
 
         return $this;
     }
 
-    public function getPlat(): ?Plat
+    public function removeItem(PanierItem $item): static
     {
-        return $this->Plat;
-    }
-
-    public function setPlat(?Plat $Plat): static
-    {
-        $this->Plat = $Plat;
+        if ($this->items->removeElement($item)) {
+            if ($item->getPanier() === $this) {
+                $item->setPanier(null);
+            }
+        }
 
         return $this;
     }
-
-    
 }
+
+

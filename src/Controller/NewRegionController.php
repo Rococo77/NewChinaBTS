@@ -18,7 +18,7 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 
-#[Route("/admin/regions")]
+#[Route("/api/admin/regions")]
 class NewRegionController extends AbstractController
 {
 

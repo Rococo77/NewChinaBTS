@@ -40,8 +40,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $email = null;
 
-    #[ORM\ManyToOne(inversedBy: 'users')]
-    private ?Role $role = null;
 
     #[ORM\Column(type: 'boolean')]
     private $isVerified = false;
@@ -85,9 +83,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->id;
     }
 
-    public function getUsername(): ?string
+    public function getUserIdentifier(): string
     {
-        return $this->username;
+        return (string) $this->email;
+    }
+    public function getUsername(): string {
+        return $this->getUserIdentifier();
     }
 
     public function setUsername(string $username): static
@@ -189,15 +190,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->role;
     }
 
-    public function setRole(?Role $role): static
+
+
+    public function setRoles(array $roles): static
     {
-        $this->role = $role;
+        $this->roles = $roles;
 
         return $this;
     }
-
     public function getRoles(): array
     {
+
+        $roles = $this->roles;
+        if (!in_array('ROLE_USER', $roles, true)) {
+            $roles[] = 'ROLE_USER';
+        }
+        return array_unique($roles);
+        /**
         $roles = $this->roles;
 
 
@@ -219,6 +228,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
 
         return array_unique($roles);
+         */
     }
 
 
@@ -243,7 +253,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removePanier(Panier $panier): static
     {
         if ($this->paniers->removeElement($panier)) {
-            // set the owning side to null (unless already changed)
             if ($panier->getUsers() === $this) {
                 $panier->setUsers(null);
             }
@@ -295,8 +304,5 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // TODO: Implement eraseCredentials() method.
     }
 
-    public function getUserIdentifier(): string
-    {
-        // TODO: Implement getUserIdentifier() method.
-    }
+
 }

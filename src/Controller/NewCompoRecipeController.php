@@ -18,7 +18,7 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 
-#[Route("/admin/recipe/{idPlat}/compo")]
+#[Route("/api/admin/recipe/{idPlat}/compo")]
 class NewCompoRecipeController extends AbstractController
 {
 
