@@ -57,3 +57,4 @@ class NewRegisterController extends AbstractController
         return new JsonResponse(['status' => 'success', 'message' => "User registered successfully"], Response::HTTP_CREATED);
     }
 }
+

@@ -107,4 +107,52 @@ class NewUserController extends AbstractController
         return new JsonResponse(['status' => 'success', 'message' => "L'utilisateur a été supprimé avec succès"], Response::HTTP_OK);
     }
 
+    #[Route('/me', name: 'api_user_me', methods: ['GET'])]
+    #[IsGranted("IS_AUTHENTICATED_FULLY")]
+    public function getCurrentUser(): Response
+    {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
+        $userData = [
+            'id' => $user->getId(),
+            'Nom' => $user->getNom(),
+            'Username' => $user->getUsername(),
+            'Prenom' => $user->getPrenom(),
+            'Adresse' => $user->getAdresse(),
+            'Zip' => $user->getZIP(),
+            'Ville' => $user->getVille(),
+            'Email' => $user->getEmail(),
+            'Roles' => $user->getRoles(),
+        ];
+
+        return new JsonResponse(['status' => 'success', 'data' => $userData], Response::HTTP_OK);
+    }
+    #[Route('/show/{id}', name: 'api_user_show', methods: ['GET'])]
+    #[IsGranted("ROLE_ADMIN")]
+    public function showUser(int $id, EntityManagerInterface $entityManager): Response
+    {
+        $user = $entityManager->getRepository(User::class)->find($id);
+
+        if (!$user) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
+        $userData = [
+            'id' => $user->getId(),
+            'Nom' => $user->getNom(),
+            'Username' => $user->getUsername(),
+            'Prenom' => $user->getPrenom(),
+            'Adresse' => $user->getAdresse(),
+            'Zip' => $user->getZIP(),
+            'Ville' => $user->getVille(),
+            'Email' => $user->getEmail(),
+            'Roles' => $user->getRoles(),
+        ];
+
+        return new JsonResponse(['status' => 'success', 'data' => $userData], Response::HTTP_OK);
+    }
 }
