@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
@@ -25,6 +26,11 @@ class NewCompoRecipeController extends AbstractController
     #[Route("/", name: "compoRecipe_list", methods: ['GET'])]
     public function compoRecipeDetails(int $idPlat, PlatRepository $platRepository, SerializerInterface $serializer): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+        if (!$this->isGranted('ROLE_USER') && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas les permissions nécessaires pour accéder à cette ressource.');
+        }
+
         $plat = $platRepository->find($idPlat);
         if (!$plat) {
             return $this->json(['message' => 'Plat not found'], Response::HTTP_NOT_FOUND);
@@ -39,6 +45,10 @@ class NewCompoRecipeController extends AbstractController
     #[Route("/{idIngredient}", name: "compoRecipe_details", methods: ['GET'])]
     public function compoRecipeDetailsIngredients (int $idPlat, int $idIngredient, PlatRepository $platRepository, SerializerInterface $serializer): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+        if (!$this->isGranted('ROLE_USER') && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas les permissions nécessaires pour accéder à cette ressource.');
+        }
         $plat = $platRepository->find($idPlat);
 
         if (!$plat) {
@@ -60,6 +70,8 @@ class NewCompoRecipeController extends AbstractController
 
 
     #[Route('/', name: 'compoRecipe_add', methods: ['POST'])]
+    #[IsGranted("ROLE_ADMIN")]
+
     public function addCompoRecipe(int $idPlat, Request $request, PlatRepository $platRepository, IngredientRepository $ingredientRepository, EntityManagerInterface $entityManager, SerializerInterface $serializer): Response
     {
         $plat = $platRepository->find($idPlat);
@@ -87,6 +99,7 @@ class NewCompoRecipeController extends AbstractController
     }
 
     #[Route('/{idIngredient}', name: 'compoRecipe_delete', methods: ['DELETE'])]
+    #[IsGranted("ROLE_ADMIN")]
     public function deleteCompoRecipe(int $idPlat, int $idIngredient, PlatRepository $platRepository, EntityManagerInterface $entityManager, SerializerInterface $serializer): Response
     {
         $plat = $platRepository->find($idPlat);
@@ -108,6 +121,7 @@ class NewCompoRecipeController extends AbstractController
         return $this->json(['message' => 'Ingredient removed successfully'], Response::HTTP_OK);
     }
     #[Route("/", name: "compoRecipe_update", methods: ['PUT'])]
+    #[IsGranted("ROLE_ADMIN")]
     public function updateCompoRecipe(int $idPlat, Request $request, PlatRepository $platRepository, IngredientRepository $ingredientRepository, EntityManagerInterface $entityManager, SerializerInterface $serializer): Response
     {
         $plat = $platRepository->find($idPlat);

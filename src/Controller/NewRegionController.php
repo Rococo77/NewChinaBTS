@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
@@ -27,6 +28,10 @@ class NewRegionController extends AbstractController
     #[Route("/", name: "region_list", methods: ['GET'])]
     public function listRegion(RegionRepository $repository, SerializerInterface $serializer): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+        if (!$this->isGranted('ROLE_USER') && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas les permissions nécessaires pour accéder à cette ressource.');
+        }
         $region = $repository->findAll();
 
         $jsonContent = $serializer->serialize($region, 'json', ['groups' => 'region.index']);
@@ -42,6 +47,10 @@ class NewRegionController extends AbstractController
     #[Route("/{id}", name: "region_details",  methods: ['GET'])]
     public function regionDetails(int $id, RegionRepository $repository, SerializerInterface $serializer): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+        if (!$this->isGranted('ROLE_USER') && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas les permissions nécessaires pour accéder à cette ressource.');
+        }
         $region = $repository->find($id);
 
         if (!$region) {
@@ -62,6 +71,8 @@ class NewRegionController extends AbstractController
 
     //CREER
     #[Route("/", name: "region_create", methods: ['POST'])]
+    #[IsGranted("ROLE_ADMIN")]
+
     public function createRegion(Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer): Response
     {
         $region = $serializer->deserialize($request->getContent(), Region::class, 'json');
@@ -74,6 +85,7 @@ class NewRegionController extends AbstractController
 
     //UPDATE
     #[Route("/{id}", methods: ['PUT'], requirements: ['id' => '\d+'])]
+    #[IsGranted("ROLE_ADMIN")]
     public function update(Region $region, Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer, RegionRepository $repository): Response
     {
         $data = json_decode($request->getContent(), true);
@@ -89,6 +101,7 @@ class NewRegionController extends AbstractController
 
     //SUPPRIMER
     #[Route("/{id}", methods: ['DELETE'], requirements: ['id' => '\d+'])]
+    #[IsGranted("ROLE_ADMIN")]
     public function delete(Region $region, EntityManagerInterface $entityManager, RegionRepository $repository): Response
     {
         $entityManager->remove($region);

@@ -14,7 +14,6 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class NewCommandeController extends AbstractController
 {
     #[Route('api/admin/commande/user-{userId}/panier-{panierId}', name: 'create_commande', methods: ['POST'])]
-    #[IsGranted("ROLE_USER")]
     public function createCommande(
         int $userId,
         int $panierId,
@@ -23,6 +22,8 @@ class NewCommandeController extends AbstractController
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer
     ): JsonResponse {
+
+
         // Récupérer l'utilisateur par son ID
         $user = $userRepository->find($userId);
 
@@ -58,7 +59,6 @@ class NewCommandeController extends AbstractController
     }
 
     #[Route('api/admin/commande-{commandeId}/user-{userId}', name: 'delete_commande', methods: ['DELETE'])]
-    #[IsGranted("ROLE_USER")]
     public function deleteCommande(
         int $commandeId,
         int $userId,

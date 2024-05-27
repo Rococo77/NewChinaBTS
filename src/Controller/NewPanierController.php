@@ -22,7 +22,6 @@ class NewPanierController extends AbstractController
 
     #Afficher le panier d'un utilisatuer
     #[Route("/user/{userId}", name: "panier_show", methods: ['GET'])]
-    #[IsGranted("ROLE_ADMIN")]
     public function showPanier(int $userId, PanierRepository $panierRepository, SerializerInterface $serializer): JsonResponse
     {
         $panier = $panierRepository->findOneBy(['Users' => $userId]);
@@ -46,6 +45,7 @@ class NewPanierController extends AbstractController
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer
     ): JsonResponse {
+
         $user = $userRepository->find($userId);
 
         if (!$user) {
@@ -89,7 +89,6 @@ class NewPanierController extends AbstractController
     }
 
     #[Route('/{panierId}', name: 'panier_items_show', methods: ['GET'])]
-    #[IsGranted("ROLE_ADMIN")]
     public function showPanierItems(int $panierId, PanierRepository $panierRepository, SerializerInterface $serializer): JsonResponse
     {
         $panier = $panierRepository->find($panierId);
@@ -104,7 +103,6 @@ class NewPanierController extends AbstractController
     }
 
     #[Route('/{panierId}', name: 'panier_update', methods: ['PUT'])]
-    #[IsGranted("ROLE_ADMIN")]
     public function updatePanier(
         int $panierId,
         Request $request,
@@ -161,7 +159,6 @@ class NewPanierController extends AbstractController
 
     #Supprimer un panier
     #[Route('/{panierId}', name: 'panier_delete', methods: ['DELETE'])]
-    #[IsGranted("ROLE_ADMIN")]
     public function deletePanier(
         int $panierId,
         PanierRepository $panierRepository,

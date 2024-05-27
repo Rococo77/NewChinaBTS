@@ -15,6 +15,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class NewUserController extends AbstractController
 {
     #[Route('/create', name: 'api_user_create', methods: ['POST'])]
+    #[IsGranted("ROLE_ADMIN")]
     public function createUser(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $hasher): Response
     {
         $userData = json_decode($request->getContent(), true);

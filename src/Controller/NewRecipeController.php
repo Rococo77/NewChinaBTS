@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
@@ -26,6 +27,12 @@ class NewRecipeController extends AbstractController
     #[Route("/", name: "recipe_list", methods: ['GET'])]
     public function listPlats(PlatRepository $repository, SerializerInterface $serializer): Response
     {
+        // Vérification des rôles
+        $this->denyAccessUnlessGranted('ROLE_USER');
+        if (!$this->isGranted('ROLE_USER') && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas les permissions nécessaires pour accéder à cette ressource.');
+        }
+
         $plats = $repository->findAll();
 
         $jsonContent = $serializer->serialize($plats, 'json', ['groups' => 'recipe.index']);
@@ -40,7 +47,10 @@ class NewRecipeController extends AbstractController
     #[Route("/{id}", name: "recipe_details",  methods: ['GET'])]
     public function platDetails(int $id, PlatRepository $repository, SerializerInterface $serializer): Response
     {
-
+        $this->denyAccessUnlessGranted('ROLE_USER');
+        if (!$this->isGranted('ROLE_USER') && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas les permissions nécessaires pour accéder à cette ressource.');
+        }
         $plats = $repository->find($id);
 
         $jsonContent = $serializer->serialize($plats, 'json', ['groups' => 'recipe.show']);
@@ -53,6 +63,8 @@ class NewRecipeController extends AbstractController
     //Creer Plat
 
     #[Route("/", name: "recipe_create", methods: ['POST'])]
+    #[IsGranted("ROLE_ADMIN")]
+
     public function createRecipe(Request $request, PlatRepository $platRepository, RegionRepository $regionRepository, IngredientRepository $ingredientRepository, EntityManagerInterface $entityManager, SerializerInterface $serializer): Response
     {
         $platData = json_decode($request->getContent(), true);
@@ -91,6 +103,7 @@ class NewRecipeController extends AbstractController
 
 
     #[Route("/{id}", methods: ['PUT'], requirements: ['id' => '\d+'])]
+    #[IsGranted("ROLE_ADMIN")]
     public function update(Plat $plat, Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer, RegionRepository $regionRepository, IngredientRepository $ingredientRepository): Response
     {
         $data = json_decode($request->getContent(), true);
@@ -126,6 +139,7 @@ class NewRecipeController extends AbstractController
     //Supprimer
 
     #[Route("/{id}", methods: ['DELETE'], requirements: ['id' => '\d+'])]
+    #[IsGranted("ROLE_ADMIN")]
     public function delete(Plat $plat, EntityManagerInterface $entityManager, PlatRepository $repository): Response
     {
         $entityManager->remove($plat);
