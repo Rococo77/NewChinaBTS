@@ -53,7 +53,7 @@ class Plat
 
     #[ORM\ManyToOne(inversedBy: 'Plat')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['recipe.show'])]
+    #[Groups(['recipe.index','recipe.show'])]
     private ?Region $region = null;
 
     /**
@@ -68,6 +68,10 @@ class Plat
      */
     #[ORM\OneToMany(targetEntity: Panier::class, mappedBy: 'Plat')]
     private Collection $paniers;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['recipe.index','recipe.show'])]
+    private ?string $imgURL = null;
 
     public function __construct()
     {
@@ -249,6 +253,18 @@ class Plat
                 $panier->setPlat(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getImgURL(): ?string
+    {
+        return $this->imgURL;
+    }
+
+    public function setImgURL(string $imgURL): static
+    {
+        $this->imgURL = $imgURL;
 
         return $this;
     }

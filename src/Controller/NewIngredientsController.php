@@ -55,7 +55,7 @@ class NewIngredientsController extends AbstractController
     #[Route("/", name: "ingredient_create", methods: ['POST'])]
     public function createIngredient(Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer): Response
     {
-        $ingredient = $serializer->deserialize($request->getContent(), Region::class, 'json');
+        $ingredient = $serializer->deserialize($request->getContent(), Ingredient::class, 'json');
 
         $entityManager->persist($ingredient);
         $entityManager->flush();
