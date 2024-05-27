@@ -27,6 +27,9 @@ class PanierItem
     #[Groups(['panier:read'])]
     private int $quantité;
 
+    #[ORM\ManyToOne(inversedBy: 'items')]
+    private ?Commande $commande = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -40,7 +43,6 @@ class PanierItem
     public function setPanier(?Panier $panier): static
     {
         $this->panier = $panier;
-
         return $this;
     }
 
@@ -52,7 +54,6 @@ class PanierItem
     public function setPlat(?Plat $plat): static
     {
         $this->plat = $plat;
-
         return $this;
     }
 
@@ -64,7 +65,18 @@ class PanierItem
     public function setQuantité(int $quantité): static
     {
         $this->quantité = $quantité;
+        return $this;
+    }
 
+    public function getCommande(): ?Commande
+    {
+        return $this->commande;
+    }
+
+    public function setCommande(?Commande $commande): static
+    {
+        $this->commande = $commande;
         return $this;
     }
 }
+

@@ -14,27 +14,32 @@ class Commande
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['commande:read'])]
+
     private ?int $id = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(['commande:read'])]
     private ?\DateTimeInterface $Date_Com = null;
 
     /**
      * @var Collection<int, User>
      */
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'commandes')]
+    #[Groups(['commande:read'])]
     private Collection $Users;
 
     /**
-     * @var Collection<int, Plat>
+     * @var Collection<int, PanierItem>
      */
-    #[ORM\ManyToMany(targetEntity: Plat::class, inversedBy: 'commandes')]
-    private Collection $Plat;
+    #[ORM\OneToMany(mappedBy: 'commande', targetEntity: PanierItem::class, cascade: ['persist', 'remove'])]
+    #[Groups(['commande:read'])]
+    private Collection $items;
 
     public function __construct()
     {
         $this->Users = new ArrayCollection();
-        $this->Plat = new ArrayCollection();
+        $this->items = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -79,25 +84,31 @@ class Commande
     }
 
     /**
-     * @return Collection<int, Plat>
+     * @return Collection<int, PanierItem>
      */
-    public function getPlat(): Collection
+    public function getItems(): Collection
     {
-        return $this->Plat;
+        return $this->items;
     }
 
-    public function addPlat(Plat $plat): static
+    public function addItem(PanierItem $item): static
     {
-        if (!$this->Plat->contains($plat)) {
-            $this->Plat->add($plat);
+        if (!$this->items->contains($item)) {
+            $this->items->add($item);
+            $item->setCommande($this);
         }
 
         return $this;
     }
 
-    public function removePlat(Plat $plat): static
+    public function removeItem(PanierItem $item): static
     {
-        $this->Plat->removeElement($plat);
+        if ($this->items->removeElement($item)) {
+            // Set the owning side to null (unless already changed)
+            if ($item->getCommande() === $this) {
+                $item->setCommande(null);
+            }
+        }
 
         return $this;
     }
