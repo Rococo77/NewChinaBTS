@@ -7,7 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: PlatRepository::class)]
 class Plat
@@ -15,66 +15,39 @@ class Plat
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['recipe.index','recipe.show','panier:read'])]
+    #[Groups(['recipe.index','recipe.show','panier:read', 'region.show'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-
-    #[Groups(['recipe.index','recipe.show','panier:read'])]
+    #[Groups(['recipe.index','recipe.show','panier:read', 'region.show'])]
     private ?string $Nom = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['recipe.show','panier:read'])]
+    #[Groups(['recipe.show','panier:read', 'region.show'])]
     private ?string $Description = null;
 
     #[ORM\Column]
-    #[Groups(['recipe.show','recipe.index','panier:read'])]
+    #[Groups(['recipe.show','recipe.index','panier:read', 'region.show'])]
     private ?float $PrixUnit = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['recipe.index','recipe.show','panier:read'])]
+    #[Groups(['recipe.index','recipe.show','panier:read', 'region.show'])]
     private ?int $StockQtt = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    #[Groups(['recipe.show','panier:read'])]
+    #[Groups(['recipe.show','panier:read', 'region.show'])]
     private ?\DateTimeInterface $PeremptionDate = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['recipe.show','panier:read'])]
+    #[Groups(['recipe.show','panier:read', 'region.show'])]
     private ?string $Allergen = null;
-
-
-
-    /**
-     * @var Collection<int, Commande>
-     */
-    #[ORM\ManyToMany(targetEntity: Commande::class, mappedBy: 'Plat')]
-    private Collection $commandes;
 
     #[ORM\ManyToOne(inversedBy: 'Plat')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['recipe.show'])]
     private ?Region $region = null;
 
-    /**
-     * @var Collection<int, Ingredient>
-     */
-    #[ORM\ManyToMany(targetEntity: Ingredient::class, mappedBy: 'Plat')]
-    #[Groups(['recipe.show','compo.index'])]
-    private Collection $ingredients;
-
-    /**
-     * @var Collection<int, Panier>
-     */
-    #[ORM\OneToMany(targetEntity: Panier::class, mappedBy: 'Plat')]
-    private Collection $paniers;
-
-    public function __construct()
-    {
-        $this->commandes = new ArrayCollection();
-        $this->ingredients = new ArrayCollection();
-        $this->paniers = new ArrayCollection();
-    }
+    // Ajoutez d'autres propriétés et méthodes ici
 
     public function getId(): ?int
     {
@@ -153,7 +126,17 @@ class Plat
         return $this;
     }
 
-   
+    public function getRegion(): ?Region
+    {
+        return $this->region;
+    }
+
+    public function setRegion(?Region $region): static
+    {
+        $this->region = $region;
+
+        return $this;
+    }
 
     /**
      * @return Collection<int, Commande>
@@ -182,22 +165,9 @@ class Plat
         return $this;
     }
 
-    public function getRegion(): ?Region
-    {
-        return $this->region;
-    }
-
-    public function setRegion(?Region $region): static
-    {
-        $this->region = $region;
-
-        return $this;
-    }
-
     /**
      * @return Collection<int, Ingredient>
      */
-
     #[Groups(['compo.index'])]
     public function getIngredients(): Collection
     {

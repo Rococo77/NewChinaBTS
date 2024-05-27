@@ -23,7 +23,6 @@ use Symfony\Component\Serializer\SerializerInterface;
 class NewIngredientsController extends AbstractController
 {
     #[Route("/", name: "ingredient_list", methods: ['GET'])]
-    #[IsGranted("ROLE_USER")]
     public function listIngredients(IngredientRepository $repository, SerializerInterface $serializer): Response
     {
 
@@ -38,7 +37,6 @@ class NewIngredientsController extends AbstractController
     }
     //AFFICHER DETAIL
     #[Route("/{id}", name: "ingredient_details",  methods: ['GET'])]
-    #[IsGranted("ROLE_USER")]
     public function ingredientDetails(int $id, IngredientRepository $repository, SerializerInterface $serializer): Response
     {
 
@@ -54,7 +52,6 @@ class NewIngredientsController extends AbstractController
 
     //CREER
     #[Route("/", name: "ingredient_create", methods: ['POST'])]
-    #[IsGranted("ROLE_ADMIN")]
     public function createIngredient(Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer): Response
     {
         $ingredientData = json_decode($request->getContent(), true);
@@ -69,7 +66,6 @@ class NewIngredientsController extends AbstractController
 
     //UPDATE
     #[Route("/{id}", methods: ['PUT'], requirements: ['id' => '\d+'])]
-    #[IsGranted("ROLE_ADMIN")]
     public function update(Ingredient $ingredient, Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer, RegionRepository $repository): Response
     {
         $data = json_decode($request->getContent(), true);
@@ -85,7 +81,6 @@ class NewIngredientsController extends AbstractController
 
     //DELETE
     #[Route("/{id}", name: "ingredient_delete", methods: ['DELETE'], requirements: ['id' => '\d+'])]
-    #[IsGranted("ROLE_ADMIN")]
     public function delete(Ingredient $ingredient, EntityManagerInterface $entityManager, IngredientRepository $repository): Response
     {
         $entityManager->remove($ingredient);

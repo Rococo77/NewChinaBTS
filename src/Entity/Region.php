@@ -6,7 +6,7 @@ use App\Repository\RegionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: RegionRepository::class)]
 class Region
@@ -21,10 +21,8 @@ class Region
     #[Groups(['region.index','region.show','recipe.show'])]
     private ?string $Nom = null;
 
-    /**
-     * @var Collection<int, Plat>
-     */
-    #[ORM\OneToMany(targetEntity: Plat::class, mappedBy: 'region', orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'region', targetEntity: Plat::class, orphanRemoval: true)]
+    #[Groups(['region.show'])] // Ajoutez ce groupe pour inclure les plats dans la réponse
     private Collection $Plat;
 
     public function __construct()

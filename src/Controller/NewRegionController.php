@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -36,16 +37,23 @@ class NewRegionController extends AbstractController
         return $response;
     }
 
-    //AFFICHER REGION DETAILS
+
+// AFFICHER REGION DETAILS
     #[Route("/{id}", name: "region_details",  methods: ['GET'])]
     public function regionDetails(int $id, RegionRepository $repository, SerializerInterface $serializer): Response
     {
-
         $region = $repository->find($id);
 
-        $jsonContent = $serializer->serialize($region, 'json', ['groups' => 'region.show']);
-        $response = new Response($jsonContent);
+        if (!$region) {
+            return $this->json(['message' => 'Region not found'], Response::HTTP_NOT_FOUND);
+        }
 
+        $jsonContent = $serializer->serialize($region, 'json', [
+            'groups' => 'region.show',
+            AbstractNormalizer::IGNORED_ATTRIBUTES => ['region'] // Pour éviter la récursion infinie
+        ]);
+
+        $response = new Response($jsonContent);
         $response->headers->set('Content-Type', 'application/json');
 
         return $response;
