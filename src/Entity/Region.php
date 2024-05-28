@@ -25,6 +25,10 @@ class Region
     #[Groups(['region.show'])] // Ajoutez ce groupe pour inclure les plats dans la réponse
     private Collection $Plat;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['region.index','region.show','recipe.show'])]
+    private ?string $Description = null;
+
     public function __construct()
     {
         $this->Plat = new ArrayCollection();
@@ -73,6 +77,18 @@ class Region
                 $plat->setRegion(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->Description;
+    }
+
+    public function setDescription(?string $Description): static
+    {
+        $this->Description = $Description;
 
         return $this;
     }

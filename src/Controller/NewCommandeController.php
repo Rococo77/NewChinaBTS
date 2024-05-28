@@ -4,6 +4,7 @@ namespace App\Controller;
 use App\Entity\Commande;
 use App\Repository\CommandeRepository;
 use App\Repository\UserRepository;
+use App\Repository\PanierRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;

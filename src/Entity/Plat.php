@@ -47,6 +47,10 @@ class Plat
     #[Groups(['recipe.show'])]
     private ?Region $region = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['recipe.index','recipe.show','panier:read', 'region.show'])]
+    private ?string $imgURL = null;
+
     // Ajoutez d'autres propriétés et méthodes ici
 
     public function getId(): ?int
@@ -218,6 +222,18 @@ class Plat
                 $panier->setPlat(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getImgURL(): ?string
+    {
+        return $this->imgURL;
+    }
+
+    public function setImgURL(?string $imgURL): static
+    {
+        $this->imgURL = $imgURL;
 
         return $this;
     }
