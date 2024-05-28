@@ -23,7 +23,7 @@ class Plat
     private ?string $Nom = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['recipe.show','panier:read', 'region.show'])]
+    #[Groups(['recipe.index','recipe.show','panier:read', 'region.show'])]
     private ?string $Description = null;
 
     #[ORM\Column]

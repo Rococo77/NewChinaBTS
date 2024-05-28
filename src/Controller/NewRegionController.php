@@ -93,6 +93,9 @@ class NewRegionController extends AbstractController
         if (isset($data['nom']) && $data['nom'] !== $region->getNom()) {
             $region->setNom($data['nom']);
         }
+        if (isset($data['description']) && $data['description'] !== $region->getDescription()) {
+            $region->setDescription($data['description']);
+        }
 
         $entityManager->flush();
 
