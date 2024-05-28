@@ -18,13 +18,14 @@ class Ingredient
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['recipe.show','ingredient.index','ingredient.show','compo.index','compo.index'])]
+    #[Groups(['recipe.show','ingredient.index','ingredient.show','compo.index'])]
     private ?string $Nom = null;
 
     /**
      * @var Collection<int, Plat>
      */
     #[ORM\ManyToMany(targetEntity: Plat::class, inversedBy: 'ingredients')]
+    #[Groups(['recipe.show','ingredient.index'])]
     private Collection $Plat;
 
     /**

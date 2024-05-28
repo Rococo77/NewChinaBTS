@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: CommandeRepository::class)]
 class Commande
@@ -15,30 +16,23 @@ class Commande
     #[ORM\GeneratedValue]
     #[ORM\Column]
     #[Groups(['commande:read'])]
-
     private ?int $id = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups(['commande:read'])]
     private ?\DateTimeInterface $Date_Com = null;
 
-    /**
-     * @var Collection<int, User>
-     */
-    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'commandes')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'commandes')]
+    #[ORM\JoinColumn(nullable: false)]
     #[Groups(['commande:read'])]
-    private Collection $Users;
+    private ?User $user = null;
 
-    /**
-     * @var Collection<int, PanierItem>
-     */
     #[ORM\OneToMany(mappedBy: 'commande', targetEntity: PanierItem::class, cascade: ['persist', 'remove'])]
     #[Groups(['commande:read'])]
     private Collection $items;
 
     public function __construct()
     {
-        $this->Users = new ArrayCollection();
         $this->items = new ArrayCollection();
     }
 
@@ -55,37 +49,20 @@ class Commande
     public function setDateCom(\DateTimeInterface $Date_Com): static
     {
         $this->Date_Com = $Date_Com;
-
         return $this;
     }
 
-    /**
-     * @return Collection<int, User>
-     */
-    public function getUsers(): Collection
+    public function getUser(): ?User
     {
-        return $this->Users;
+        return $this->user;
     }
 
-    public function addUser(User $user): static
+    public function setUser(User $user): static
     {
-        if (!$this->Users->contains($user)) {
-            $this->Users->add($user);
-        }
-
+        $this->user = $user;
         return $this;
     }
 
-    public function removeUser(User $user): static
-    {
-        $this->Users->removeElement($user);
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, PanierItem>
-     */
     public function getItems(): Collection
     {
         return $this->items;
@@ -97,19 +74,16 @@ class Commande
             $this->items->add($item);
             $item->setCommande($this);
         }
-
         return $this;
     }
 
     public function removeItem(PanierItem $item): static
     {
         if ($this->items->removeElement($item)) {
-            // Set the owning side to null (unless already changed)
             if ($item->getCommande() === $this) {
                 $item->setCommande(null);
             }
         }
-
         return $this;
     }
 }

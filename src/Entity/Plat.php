@@ -47,7 +47,20 @@ class Plat
     #[Groups(['recipe.show'])]
     private ?Region $region = null;
 
-    // Ajoutez d'autres propriétés et méthodes ici
+    /**
+     * @var Collection<int, Ingredient>
+     */
+    #[ORM\ManyToMany(targetEntity: Ingredient::class, mappedBy: 'Plat')]
+    #[Groups(['recipe.show','compo.index'])]
+    private Collection $ingredients;
+
+    public function __construct()
+    {
+        $this->commandes = new ArrayCollection();
+        $this->ingredients = new ArrayCollection();
+        $this->paniers = new ArrayCollection();
+    }
+
 
     public function getId(): ?int
     {

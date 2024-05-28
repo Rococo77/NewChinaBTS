@@ -4,12 +4,12 @@ namespace App\Controller;
 use App\Entity\Commande;
 use App\Repository\CommandeRepository;
 use App\Repository\UserRepository;
+use App\Repository\PanierRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class NewCommandeController extends AbstractController
 {
@@ -22,7 +22,6 @@ class NewCommandeController extends AbstractController
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer
     ): JsonResponse {
-
 
         // Récupérer l'utilisateur par son ID
         $user = $userRepository->find($userId);
@@ -41,10 +40,11 @@ class NewCommandeController extends AbstractController
         // Créer la commande
         $commande = new Commande();
         $commande->setDateCom(new \DateTime());
-        $commande->addUser($user);
+        $commande->setUser($user);
 
         // Ajouter les éléments du panier à la commande
         foreach ($panier->getItems() as $item) {
+            $item->setCommande($commande);
             $commande->addItem($item);
         }
 
@@ -52,8 +52,13 @@ class NewCommandeController extends AbstractController
         $entityManager->persist($commande);
         $entityManager->flush();
 
-        // Sérialiser la commande pour la réponse
-        $data = $serializer->serialize($commande, 'json', ['groups' => ['commande:read']]);
+        // Sérialiser la commande pour la réponse avec circular_reference_handler
+        $data = $serializer->serialize($commande, 'json', [
+            'groups' => ['commande:read'],
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            },
+        ]);
 
         return new JsonResponse($data, 201, [], true);
     }
@@ -81,7 +86,7 @@ class NewCommandeController extends AbstractController
         }
 
         // Vérifier que la commande est associée à l'utilisateur
-        if (!$commande->getUsers()->contains($user)) {
+        if ($commande->getUser() !== $user) {
             return new JsonResponse(['error' => 'La commande n\'est pas associée à cet utilisateur.'], 403);
         }
 

@@ -11,7 +11,7 @@ class PanierItem
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['panier:read'])]
+    #[Groups(['panier:read', 'commande:read'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'items')]
@@ -20,12 +20,16 @@ class PanierItem
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['panier:read'])]
+    #[Groups(['panier:read', 'commande:read'])]
     private ?Plat $plat = null;
 
     #[ORM\Column]
-    #[Groups(['panier:read'])]
+    #[Groups(['panier:read', 'commande:read'])]
     private int $quantité;
+
+    #[ORM\ManyToOne(targetEntity: Commande::class, inversedBy: 'items')]
+    #[Groups(['panier:read', 'commande:read'])]
+    private ?Commande $commande = null;
 
     public function getId(): ?int
     {
@@ -62,6 +66,17 @@ class PanierItem
     public function setQuantité(int $quantité): static
     {
         $this->quantité = $quantité;
+        return $this;
+    }
+
+    public function getCommande(): ?Commande
+    {
+        return $this->commande;
+    }
+
+    public function setCommande(?Commande $commande): static
+    {
+        $this->commande = $commande;
         return $this;
     }
 }
