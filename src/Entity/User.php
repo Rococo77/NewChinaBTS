@@ -185,10 +185,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getRole(): ?Role
-    {
-        return $this->role;
-    }
+   /**  public function getRole(): ?Role
+    *{
+     *   return $this->role;
+    *}
+    */
 
 
 

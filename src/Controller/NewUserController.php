@@ -113,8 +113,7 @@ class NewUserController extends AbstractController
     public function getCurrentUser(): Response
     {
         $user = $this->getUser();
-        dump($user);
-        if (!$user) {
+        if (!$user instanceof User) {
             return new JsonResponse(['status' => 'error', 'message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
         }
 
