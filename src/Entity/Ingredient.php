@@ -6,7 +6,7 @@ use App\Repository\IngredientRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: IngredientRepository::class)]
 class Ingredient
@@ -14,7 +14,7 @@ class Ingredient
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['recipe.show','ingredient.index','ingredient.show','compo.index','compo.index'])]
+    #[Groups(['recipe.show','ingredient.index','ingredient.show','compo.index'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -34,10 +34,45 @@ class Ingredient
     #[ORM\ManyToMany(targetEntity: IngrStock::class, inversedBy: 'ingredients')]
     private Collection $Stock;
 
+    /**
+     * @var Collection<int, Fournisseur>
+     */
+    #[ORM\ManyToMany(targetEntity: Fournisseur::class, mappedBy: 'ingredients')]
+    #[Groups(['ingredient.show'])]
+    private Collection $fournisseurs;
+
+    #[ORM\Column]
+    private ?bool $allergen = null;
+
     public function __construct()
     {
         $this->Plat = new ArrayCollection();
         $this->Stock = new ArrayCollection();
+        $this->fournisseurs = new ArrayCollection();
+    }
+
+    /**
+     * @return Collection|Fournisseur[]
+     */
+    public function getFournisseurs(): Collection
+    {
+        return $this->fournisseurs;
+    }
+
+    public function addFournisseur(Fournisseur $fournisseur): self
+    {
+        if (!$this->fournisseurs->contains($fournisseur)) {
+            $this->fournisseurs[] = $fournisseur;
+        }
+
+        return $this;
+    }
+
+    public function removeFournisseur(Fournisseur $fournisseur): self
+    {
+        $this->fournisseurs->removeElement($fournisseur);
+
+        return $this;
     }
 
     public function getId(): ?int
@@ -101,6 +136,22 @@ class Ingredient
     public function removeStock(IngrStock $stock): static
     {
         $this->Stock->removeElement($stock);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Fournisseur>
+     */
+
+    public function isAllergen(): ?bool
+    {
+        return $this->allergen;
+    }
+
+    public function setAllergen(bool $allergen): static
+    {
+        $this->allergen = $allergen;
 
         return $this;
     }

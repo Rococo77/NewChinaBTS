@@ -38,9 +38,7 @@ class Plat
     #[Groups(['recipe.show','panier:read', 'region.show'])]
     private ?\DateTimeInterface $PeremptionDate = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['recipe.show','panier:read', 'region.show'])]
-    private ?string $Allergen = null;
+
 
     #[ORM\ManyToOne(inversedBy: 'Plat')]
     #[ORM\JoinColumn(nullable: false)]
@@ -127,17 +125,7 @@ class Plat
         return $this;
     }
 
-    public function getAllergen(): ?string
-    {
-        return $this->Allergen;
-    }
 
-    public function setAllergen(?string $Allergen): static
-    {
-        $this->Allergen = $Allergen;
-
-        return $this;
-    }
 
     public function getRegion(): ?Region
     {

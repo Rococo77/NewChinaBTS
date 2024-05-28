@@ -3,20 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\Ingredient;
-use App\Entity\Plat;
-use App\Entity\Region;
 use App\Repository\IngredientRepository;
-use App\Repository\PlatRepository;
-use App\Repository\RegionRepository;
+use App\Repository\FournisseurRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 #[Route("/api/admin/ingredients")]
@@ -39,11 +33,10 @@ class NewIngredientsController extends AbstractController
 
         return $response;
     }
-    //AFFICHER DETAIL
-    #[Route("/{id}", name: "ingredient_details",  methods: ['GET'])]
+
+    #[Route("/{id}", name: "ingredient_details", methods: ['GET'])]
     public function ingredientDetails(int $id, IngredientRepository $repository, SerializerInterface $serializer): Response
     {
-
         $this->denyAccessUnlessGranted('ROLE_USER');
         if (!$this->isGranted('ROLE_USER') && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Vous n\'avez pas les permissions nécessaires pour accéder à cette ressource.');
@@ -59,7 +52,6 @@ class NewIngredientsController extends AbstractController
         return $response;
     }
 
-    //CREER
     #[Route("/", name: "ingredient_create", methods: ['POST'])]
     #[IsGranted("ROLE_ADMIN")]
     public function createIngredient(Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer): Response
@@ -68,16 +60,17 @@ class NewIngredientsController extends AbstractController
 
         $ingredient = new Ingredient();
         $ingredient->setNom($ingredientData['Nom']);
+        $ingredient->setAllergen($ingredientData['Allergen']);
 
         $entityManager->persist($ingredient);
         $entityManager->flush();
+
         return $this->json($ingredient, Response::HTTP_CREATED, [], ['groups' => 'ingredient.index']);
     }
 
-    //UPDATE
     #[Route("/{id}", methods: ['PUT'], requirements: ['id' => '\d+'])]
     #[IsGranted("ROLE_ADMIN")]
-    public function update(Ingredient $ingredient, Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer, RegionRepository $repository): Response
+    public function updateIngredient(Ingredient $ingredient, Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer): Response
     {
         $data = json_decode($request->getContent(), true);
 
@@ -90,16 +83,55 @@ class NewIngredientsController extends AbstractController
         return $this->json($ingredient, Response::HTTP_OK, [], ['groups' => ['ingredient.index']]);
     }
 
-    //DELETE
     #[Route("/{id}", name: "ingredient_delete", methods: ['DELETE'], requirements: ['id' => '\d+'])]
     #[IsGranted("ROLE_ADMIN")]
-    public function delete(Ingredient $ingredient, EntityManagerInterface $entityManager, IngredientRepository $repository): Response
+    public function deleteIngredient(Ingredient $ingredient, EntityManagerInterface $entityManager, IngredientRepository $repository): Response
     {
         $entityManager->remove($ingredient);
         $entityManager->flush();
 
-        $ingredient = $repository->findAll();
-        return $this->json($ingredient, 200, [], ['groups' => ['ingredient.index']]);
+        $ingredients = $repository->findAll();
+        return $this->json($ingredients, 200, [], ['groups' => ['ingredient.index']]);
     }
 
+    #[Route("/{id}/fournisseurs", name: "ingredient_add_fournisseur", methods: ['POST'])]
+    #[IsGranted("ROLE_ADMIN")]
+    public function addFournisseurToIngredient(int $id, Request $request, IngredientRepository $ingredientRepository, FournisseurRepository $fournisseurRepository, EntityManagerInterface $entityManager): Response
+    {
+        $ingredient = $ingredientRepository->find($id);
+        if (!$ingredient) {
+            return new Response('Ingredient not found', Response::HTTP_NOT_FOUND);
+        }
+
+        $fournisseurData = json_decode($request->getContent(), true);
+        $fournisseur = $fournisseurRepository->find($fournisseurData['id']);
+        if (!$fournisseur) {
+            return new Response('Fournisseur not found', Response::HTTP_NOT_FOUND);
+        }
+
+        $ingredient->addFournisseur($fournisseur);
+        $entityManager->flush();
+
+        return new Response('Fournisseur added to ingredient', Response::HTTP_OK);
+    }
+
+    #[Route("/{id}/fournisseurs/{fournisseurId}", name: "ingredient_remove_fournisseur", methods: ['DELETE'])]
+    #[IsGranted("ROLE_ADMIN")]
+    public function removeFournisseurFromIngredient(int $id, int $fournisseurId, IngredientRepository $ingredientRepository, FournisseurRepository $fournisseurRepository, EntityManagerInterface $entityManager): Response
+    {
+        $ingredient = $ingredientRepository->find($id);
+        if (!$ingredient) {
+            return new Response('Ingredient not found', Response::HTTP_NOT_FOUND);
+        }
+
+        $fournisseur = $fournisseurRepository->find($fournisseurId);
+        if (!$fournisseur) {
+            return new Response('Fournisseur not found', Response::HTTP_NOT_FOUND);
+        }
+
+        $ingredient->removeFournisseur($fournisseur);
+        $entityManager->flush();
+
+        return new Response('Fournisseur removed from ingredient', Response::HTTP_OK);
+    }
 }
