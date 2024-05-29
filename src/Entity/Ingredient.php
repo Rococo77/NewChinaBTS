@@ -44,6 +44,9 @@ class Ingredient
     #[ORM\Column]
     private ?bool $allergen = null;
 
+    #[ORM\ManyToOne(inversedBy: 'ingredients')]
+    private ?Label $label = null;
+
     public function __construct()
     {
         $this->Plat = new ArrayCollection();
@@ -152,6 +155,18 @@ class Ingredient
     public function setAllergen(bool $allergen): static
     {
         $this->allergen = $allergen;
+
+        return $this;
+    }
+
+    public function getLabel(): ?Label
+    {
+        return $this->label;
+    }
+
+    public function setLabel(?Label $label): static
+    {
+        $this->label = $label;
 
         return $this;
     }
