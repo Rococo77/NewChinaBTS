@@ -32,14 +32,10 @@ security:
 
         api:
             pattern: ^/api/
-            stateless: true
-            jwt: ~
+            stateless: false
+            
 
-    access_control:
-        - { path: ^/api/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api/open/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api/admin, roles: ["ROLE_ADMIN","ROLE_USER"] }
-        - { path: ^/api, roles: ROLE_USER }
+   
 
 when@test:
     security:
