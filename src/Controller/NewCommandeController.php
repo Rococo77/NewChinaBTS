@@ -14,7 +14,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class NewCommandeController extends AbstractController
 {
-    #[Route('api/admin/commande/user-{userId}/panier-{panierId}', name: 'create_commande', methods: ['POST'])]
+    #[Route('/api/admin/commande/user-{userId}/panier-{panierId}', name: 'create_commande', methods: ['POST'])]
     public function createCommande(
         int $userId,
         int $panierId,
